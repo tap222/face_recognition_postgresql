@@ -16,7 +16,7 @@ video_capture = cv2.VideoCapture(0)
 if not os.path.exists("./.faces"):
     os.mkdir("./.faces")
 
-db = pg_driver.connect(user = 'postgres',password = 'postgres', host = 'localhost', port = 5432, database = 'face')
+db = pg_driver.connect(user = 'tapasmohanty',password = 'postgres', host = 'localhost', port = 5432, database = 'face')
 
 while True:
     # Grab a single frame of video
