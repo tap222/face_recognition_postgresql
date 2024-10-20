@@ -94,6 +94,7 @@ try:
                     except Exception as db_error:
                         logging.error("Database insert failed: {}".format(db_error))
                         logging.error(traceback.format_exc())
+                        db_conn.rollback()  # Rollback in case of failure
 
                 # Draw a rectangle around the face
                 cv2.rectangle(frame, (face_rect.left(), face_rect.top()), (face_rect.right(), face_rect.bottom()), (0, 0, 255), 2)
