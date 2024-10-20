@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+psycopg2
+python-dotenv
+face_recognition
+opencv-python
+dlib
