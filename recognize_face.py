@@ -1,3 +1,4 @@
+# recognize_face.py
 import cv2
 import dlib
 import face_recognition
@@ -5,6 +6,7 @@ import psycopg2
 import logging
 from dotenv import load_dotenv
 import os
+import sys
 
 # Load environment variables from .env file
 load_dotenv()
@@ -25,7 +27,7 @@ try:
     logging.info("Successfully connected to the database.")
 except Exception as e:
     logging.error("Failed to connect to the database: {}".format(e))
-    exit(1)
+    sys.exit(1)
 
 def match_face(encoding):
     """Compare face encoding with database records"""
@@ -80,10 +82,10 @@ def recognize_faces():
 if __name__ == "__main__":
     recognize_faces()
 
-# Close the database connection
-try:
-    db_cursor.close()
-    db_conn.close()
-    logging.info("Database connection closed.")
-except Exception as db_close_error:
-    logging.error("Failed to close the database connection: {}".format(db_close_error))
+    # Close the database connection
+    try:
+        db_cursor.close()
+        db_conn.close()
+        logging.info("Database connection closed.")
+    except Exception as db_close_error:
+        logging.error("Failed to close the database connection: {}".format(db_close_error))

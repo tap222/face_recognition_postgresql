@@ -1,3 +1,4 @@
+# add_face.py
 import sys
 import dlib
 import cv2
@@ -8,8 +9,7 @@ import uuid
 import logging
 import traceback
 from tkinter import Tk, Label, Entry, Button, StringVar
-from dotenv import load_dotenv  # Import dotenv to load environment variables
-import os  # Import os to access environment variables
+from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
@@ -39,15 +39,29 @@ if not os.path.exists("./.faces"):
 
 
 def start_face_registration():
-    person_name = name_var.get()
-    if not person_name:
-        result_label.config(text="Please enter a name")
-        return
-    
-    # Start capturing 5 images of the person
-    capture_images(person_name)
+    app = Tk()
+    app.title("Face Registration")
 
+    name_var = StringVar()
 
+    def capture_images_gui():
+        person_name = name_var.get()
+        if not person_name:
+            result_label.config(text="Please enter a name")
+            return
+        capture_images(person_name)
+        result_label.config(text=f"Registered face for {person_name}")
+        app.destroy()
+
+    Label(app, text="Enter name: ").grid(row=0, column=0)
+    Entry(app, textvariable=name_var).grid(row=0, column=1)
+    Button(app, text="Start Face Registration", command=capture_images_gui).grid(row=1, column=1)
+    result_label = Label(app, text="")
+    result_label.grid(row=2, column=1)
+
+    app.mainloop()
+
+# Function for capturing face data and adding to the database
 def capture_images(person_name):
     video_capture = cv2.VideoCapture(0)
     face_detector = dlib.get_frontal_face_detector()
@@ -106,9 +120,9 @@ def capture_images(person_name):
 
     if captured_faces == 5:
         store_face_data(person_name, encodings_list)
-        result_label.config(text=f"Registered face for {person_name}")
+        logging.info(f"Successfully registered face for {person_name}.")
     else:
-        result_label.config(text="Failed to capture sufficient images")
+        logging.error("Failed to capture sufficient images.")
 
 
 def store_face_data(person_name, encodings_list):
@@ -133,24 +147,13 @@ def store_face_data(person_name, encodings_list):
         db_conn.rollback()
 
 
-# Tkinter GUI for user input
-app = Tk()
-app.title("Face Registration")
+if __name__ == "__main__":
+    start_face_registration()
 
-name_var = StringVar()
-
-Label(app, text="Enter name: ").grid(row=0, column=0)
-Entry(app, textvariable=name_var).grid(row=0, column=1)
-Button(app, text="Start Face Registration", command=start_face_registration).grid(row=1, column=1)
-result_label = Label(app, text="")
-result_label.grid(row=2, column=1)
-
-app.mainloop()
-
-# Close the database connection
-try:
-    db_cursor.close()
-    db_conn.close()
-    logging.info("Database connection closed.")
-except Exception as db_close_error:
-    logging.error("Failed to close the database connection: {}".format(db_close_error))
+    # Close the database connection
+    try:
+        db_cursor.close()
+        db_conn.close()
+        logging.info("Database connection closed.")
+    except Exception as db_close_error:
+        logging.error("Failed to close the database connection: {}".format(db_close_error))
