@@ -1,0 +1,12 @@
+curl -X 'POST' \
+  'http://127.0.0.1:8000/register_face/?name=JohnDoe' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@/path/to/face_image.jpg'
+
+
+curl -X 'POST' \
+  'http://127.0.0.1:8000/recognize_face/' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@/path/to/face_image.jpg'
