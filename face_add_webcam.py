@@ -3,8 +3,7 @@ import dlib
 import cv2
 import face_recognition
 import os
-import postgresql
-import postgresql.driver as pg_driver
+import psycopg2  # Use psycopg2 instead of postgresql
 import time
 from datetime import datetime
 import uuid
@@ -16,7 +15,14 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # Database connection configuration
 try:
-    db = pg_driver.connect(user='tapasmohanty', password='postgres', host='localhost', port=5432, database='face')
+    db_conn = psycopg2.connect(
+        user='tapasmohanty',
+        password='postgres',
+        host='localhost',
+        port=5432,
+        database='face'
+    )
+    db_cursor = db_conn.cursor()
     logging.info("Successfully connected to the database.")
 except Exception as e:
     logging.error("Failed to connect to the database: {}".format(e))
@@ -73,15 +79,17 @@ try:
                     # Prepare query to insert into the database
                     query = """
                         INSERT INTO vectors (file, vec_low, vec_high)
-                        VALUES ('{}', CUBE(array[{}]), CUBE(array[{}]))
-                    """.format(
+                        VALUES (%s, CUBE(array[%s]), CUBE(array[%s]))
+                    """
+                    values = (
                         filename,
                         ','.join(str(s) for s in encodings[0][0:64]),
                         ','.join(str(s) for s in encodings[0][64:128]),
                     )
                     try:
                         # Execute the query
-                        db.execute(query)
+                        db_cursor.execute(query, values)
+                        db_conn.commit()
                         logging.info("Inserted face encoding into the database for face #{}".format(i))
                     except Exception as db_error:
                         logging.error("Database insert failed: {}".format(db_error))
@@ -118,7 +126,8 @@ finally:
 
     # Close the database connection
     try:
-        db.close()
+        db_cursor.close()
+        db_conn.close()
         logging.info("Database connection closed.")
     except Exception as db_close_error:
         logging.error("Failed to close the database connection: {}".format(db_close_error))
